@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Reconstructed Fire Language — Writing Tool</title>
+<style>
+  :root {
+    --bg: #07050a;
+    --card: #12101a;
+    --gold: #e8c547;
+    --orange: #ff6a00;
+    --fire: #ff4500;
+    --cyan: #4fd1c5;
+    --text: #f0e6d2;
+    --muted: #a89b84;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: radial-gradient(ellipse at top, #1a1208 0%, var(--bg) 60%);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header {
+    text-align: center;
+    padding: 2.5rem 1rem 1.5rem;
+    background: linear-gradient(180deg, rgba(232,197,71,0.08), transparent);
+    border-bottom: 1px solid rgba(232,197,71,0.2);
+  }
+  header h1 {
+    margin: 0;
+    font-size: 2.4rem;
+    letter-spacing: 0.08em;
+    background: linear-gradient(90deg, var(--gold), #fff5cc, var(--orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header p {
+    margin: 0.4rem 0 0;
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+  .container { max-width: 1280px; margin: 0 auto; padding: 1.5rem; }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  input[type="text"] {
+    flex: 1;
+    min-width: 260px;
+    padding: 0.85rem 1rem;
+    font-size: 1.1rem;
+    background: #1c1826;
+    border: 1px solid #3a3220;
+    border-radius: 8px;
+    color: var(--text);
+  }
+  button {
+    padding: 0.85rem 1.4rem;
+    background: linear-gradient(135deg, #c2410c, #ea580c);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  button:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(255,69,0,0.35); }
+  .keyboard {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 1rem 0 1.5rem;
+  }
+  .key {
+    padding: 0.55rem 0.75rem;
+    background: #1e1a28;
+    border: 1px solid #3d3422;
+    border-radius: 6px;
+    color: var(--gold);
+    cursor: pointer;
+    font-size: 0.92rem;
+    min-width: 64px;
+    text-align: center;
+  }
+  .key:hover { background: #2a2438; border-color: var(--gold); }
+  .output {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  .letter-card {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 1rem;
+    background: var(--card);
+    border: 1px solid rgba(232,197,71,0.18);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  @media (max-width: 700px) {
+    .letter-card { grid-template-columns: 1fr; }
+  }
+  .letter-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #1f1a12, #0f0d14);
+    border-radius: 10px;
+    padding: 0.8rem;
+    text-align: center;
+  }
+  .letter-header .num {
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+  .letter-header .name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--gold);
+    margin: 0.15rem 0;
+  }
+  .letter-header .sound {
+    font-size: 0.9rem;
+    color: var(--cyan);
+  }
+  .letter-header .hebrew {
+    font-size: 2.2rem;
+    margin-top: 0.3rem;
+    color: #ffb347;
+  }
+  .details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.6rem 1rem;
+  }
+  .detail {
+    font-size: 0.88rem;
+  }
+  .detail strong {
+    display: block;
+    color: var(--orange);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.15rem;
+  }
+  .fire-visual {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    filter: drop-shadow(0 0 6px #ff4500);
+  }
+  .overview {
+    background: #0f0d14;
+    border: 1px solid rgba(232,197,71,0.15);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+  .overview h2 { margin: 0 0 0.6rem; color: var(--gold); font-size: 1.2rem; }
+  .groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .group-box {
+    flex: 1;
+    min-width: 200px;
+    background: #161320;
+    padding: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid #2e2838;
+  }
+  .group-box h3 { margin: 0 0 0.4rem; color: var(--cyan); font-size: 0.95rem; }
+  .group-box ul { margin: 0; padding-left: 1.1rem; color: var(--muted); }
+  footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    border-top: 1px solid #2a2430;
+    margin-top: 2rem;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>THE RECONSTRUCTED FIRE LANGUAGE</h1>
+  <p>Ancient Kemetic Alphabet of Creation — Writing Tool</p>
+</header>
+
+<div class="container">
+  <div class="overview">
+    <h2>System Overview</h2>
+    <p>The Fire Language is a reconstructed multi-layered alphabet of 22 letters (the Hebrew sequence) presented as the living movement of creation. Each letter carries simultaneous layers: primordial fire movement, sacred geometry vector, ancient pictographic origin, numerical value, celestial/zodiac correspondence, elemental quality, and a core manifesting theme.</p>
+    <p style="margin: 0.6rem 0 0;"><strong>Creation Sequence:</strong> Divine Principle → Celestial Order → Fire and Movement → Geometry → Letters → Numbers → Manifesting Word</p>
+    <div class="groups">
+      <div class="group-box">
+        <h3>3 Mother Letters</h3>
+        <ul>
+          <li>Aleph — Air / Source</li>
+          <li>Mem — Water / Flow</li>
+          <li>Shin — Fire / Transformation</li>
+        </ul>
+      </div>
+      <div class="group-box">
+        <h3>7 Double Letters</h3>
+        <ul>
+          <li>Bet, Gimel, Dalet, Kaf, Pe, Resh, Tav</li>
+          <li>Planetary correspondences (Moon through Cosmos)</li>
+        </ul>
+      </div>
+      <div class="group-box">
+        <h3>12 Simple Letters</h3>
+        <ul>
+          <li>Zodiac signs (Aries through Pisces)</li>
+          <li>He, Waw, Zayin, Het, Tet, Yod, Lamed, Nun, Samekh, Ayin, Tsadi, Qof</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="inputText" placeholder="Type a word or phrase (Latin letters map to the 22) or click letters below…" />
+    <button onclick="renderComposition()">Write in Fire Language</button>
+    <button onclick="clearAll()" style="background:#3a2e24;">Clear</button>
+  </div>
+
+  <div class="keyboard" id="keyboard"></div>
+
+  <div class="output" id="output"></div>
+</div>
+
+<footer>
+  “The Fire Language is the Movement of Creation frozen into symbol, hidden in the alphabet, connecting man, the stars, and the divine word.” — Dr. Phil Valentine<br>
+  Tool created for study and creative composition. All symbolic data drawn from the reconstructed chart.
+</footer>
+
+<script>
+const letters = [
+  { id:1, name:"Aleph", sound:"A", movement:"Primordial Breath Unity / Source", fire:"Rising flame", geometry:"Straight line", origin:"Ox Head", proto:"A-form", hebrew:"א", value:1, celestial:"Air / Spirit", element:"Air", theme:"Source Potential", group:"Mother" },
+  { id:2, name:"Bet", sound:"B", movement:"Containment Structure", fire:"Triangular enclosure", geometry:"House form", origin:"House", proto:"B-form", hebrew:"ב", value:2, celestial:"Moon", element:"Earth", theme:"Form Stability", group:"Double" },
+  { id:3, name:"Gimel", sound:"G", movement:"Forward Motion Progress", fire:"Wavy advance", geometry:"Triangle", origin:"Camel", proto:"G-form", hebrew:"ג", value:3, celestial:"Mercury", element:"Air", theme:"Movement Development", group:"Double" },
+  { id:4, name:"Dalet", sound:"D", movement:"Opening Doorway", fire:"Circular opening", geometry:"V / doorway", origin:"Door", proto:"D-form", hebrew:"ד", value:4, celestial:"Venus", element:"Earth", theme:"Transition Passage", group:"Double" },
+  { id:5, name:"He", sound:"H", movement:"Ignition Revelation", fire:"Arrow of light", geometry:"Square / window", origin:"Reed / Breath", proto:"H-form", hebrew:"ה", value:5, celestial:"Aries", element:"Fire", theme:"Light Manifestation", group:"Simple" },
+  { id:6, name:"Waw", sound:"W", movement:"Connection Link", fire:"Vertical connector", geometry:"Hook / I-form", origin:"Hook", proto:"W-form", hebrew:"ו", value:6, celestial:"Taurus", element:"Earth", theme:"Union Continuity", group:"Simple" },
+  { id:7, name:"Zayin", sound:"Z", movement:"Division Duality", fire:"Crossed division", geometry:"Square / weapon", origin:"Weapon", proto:"Z-form", hebrew:"ז", value:7, celestial:"Gemini", element:"Air", theme:"Separation Differentiation", group:"Simple" },
+  { id:8, name:"Het", sound:"Ch", movement:"Enclosure Womb", fire:"Square enclosure", geometry:"Closed square", origin:"Enclosure / Fence", proto:"H-form", hebrew:"ח", value:8, celestial:"Cancer", element:"Water", theme:"Protection Gestation", group:"Simple" },
+  { id:9, name:"Tet", sound:"T", movement:"Radiance Expansion", fire:"Spiral radiance", geometry:"V / serpent", origin:"Serpent", proto:"T-form", hebrew:"ט", value:9, celestial:"Sun", element:"Fire", theme:"Power Radiance", group:"Simple" },
+  { id:10, name:"Yod", sound:"Y", movement:"Focused Spark Direction", fire:"Focused spark", geometry:"Point / line", origin:"Hand", proto:"Y-form", hebrew:"י", value:10, celestial:"Virgo", element:"Earth", theme:"Direction Intention", group:"Simple" },
+  { id:11, name:"Kaf", sound:"K", movement:"Receiving Gathering", fire:"Curved receiving", geometry:"Palm / line", origin:"Palm", proto:"K-form", hebrew:"כ", value:20, celestial:"Mars", element:"Fire", theme:"Expansion Influence", group:"Double" },
+  { id:12, name:"Lamed", sound:"L", movement:"Rising Equilibrium", fire:"Rising wave", geometry:"Staff / ascent", origin:"Staff / Goad", proto:"L-form", hebrew:"ל", value:30, celestial:"Libra", element:"Air", theme:"Balance Harmony", group:"Simple" },
+  { id:13, name:"Mem", sound:"M", movement:"Flow Wave", fire:"Flowing wave", geometry:"Wave lines", origin:"Water", proto:"M-form", hebrew:"מ", value:40, celestial:"Water / Moon", element:"Water", theme:"Life Flow", group:"Mother" },
+  { id:14, name:"Nun", sound:"N", movement:"Transformation Regeneration", fire:"Regenerating wave", geometry:"V / descent", origin:"Water / Fish", proto:"N-form", hebrew:"נ", value:50, celestial:"Scorpio", element:"Water", theme:"Change Renewal", group:"Simple" },
+  { id:15, name:"Samekh", sound:"S", movement:"Rotation Cycle", fire:"Circular cycle", geometry:"Circle", origin:"Serpent / Support", proto:"S-form", hebrew:"ס", value:60, celestial:"Sagittarius", element:"Fire", theme:"Cycle Alignment", group:"Simple" },
+  { id:16, name:"Ayin", sound:"A/O", movement:"Perception Seeing", fire:"Eye of awareness", geometry:"Eye form", origin:"Eye", proto:"O-form", hebrew:"ע", value:70, celestial:"Capricorn", element:"Earth", theme:"Vision Awareness", group:"Simple" },
+  { id:17, name:"Pe", sound:"P", movement:"Emission Speech", fire:"Emitting form", geometry:"Mouth / 7", origin:"Mouth", proto:"P-form", hebrew:"פ", value:80, celestial:"Jupiter", element:"Air", theme:"Expression Creation", group:"Double" },
+  { id:18, name:"Tsadi", sound:"Ts", movement:"Distribution Branching", fire:"Branching flame", geometry:"Hook / constellation", origin:"Fish Hook", proto:"Ts-form", hebrew:"צ", value:90, celestial:"Aquarius", element:"Air", theme:"Dispersion Reach", group:"Simple" },
+  { id:19, name:"Qof", sound:"Q", movement:"Dissolution Return", fire:"Returning curve", geometry:"Curve / back", origin:"Back of Head", proto:"Q-form", hebrew:"ק", value:100, celestial:"Saturn", element:"Water", theme:"Return Transcendence", group:"Simple" },
+  { id:20, name:"Resh", sound:"R", movement:"Illumination Awakening", fire:"Illuminating flame", geometry:"Head / triangle", origin:"Head", proto:"R-form", hebrew:"ר", value:200, celestial:"Pisces", element:"Fire", theme:"Illumination Mind", group:"Double" },
+  { id:21, name:"Shin", sound:"Sh", movement:"Rising Flame Power", fire:"Triple rising flame", geometry:"Teeth / three points", origin:"Teeth", proto:"Sh-form", hebrew:"ש", value:300, celestial:"Fire / Sun", element:"Fire", theme:"Transformation Fire", group:"Mother" },
+  { id:22, name:"Tav", sound:"T", movement:"Completion Seal", fire:"Cross seal", geometry:"Cross / mark", origin:"Mark / Cross", proto:"T-form", hebrew:"ת", value:400, celestial:"Saturn / Cosmos", element:"Ether", theme:"Completion Wholeness", group:"Double" }
+];
+
+// Latin mapping for quick typing (approximate, prioritizes common correspondences)
+const latinMap = {
+  'A': 'Aleph', 'B': 'Bet', 'C': 'Kaf', 'D': 'Dalet', 'E': 'He', 'F': 'Pe', 'G': 'Gimel',
+  'H': 'He', 'I': 'Yod', 'J': 'Yod', 'K': 'Kaf', 'L': 'Lamed', 'M': 'Mem', 'N': 'Nun',
+  'O': 'Ayin', 'P': 'Pe', 'Q': 'Qof', 'R': 'Resh', 'S': 'Samekh', 'T': 'Tav', 'U': 'Waw',
+  'V': 'Waw', 'W': 'Waw', 'X': 'Tsadi', 'Y': 'Yod', 'Z': 'Zayin'
+};
+
+function getLetterByName(name) {
+  return letters.find(l => l.name.toLowerCase() === name.toLowerCase());
+}
+
+function renderKeyboard() {
+  const kb = document.getElementById('keyboard');
+  letters.forEach(l => {
+    const btn = document.createElement('button');
+    btn.className = 'key';
+    btn.innerHTML = `${l.hebrew}<br><small>${l.name}</small>`;
+    btn.onclick = () => appendLetter(l);
+    kb.appendChild(btn);
+  });
+}
+
+function appendLetter(letter) {
+  const input = document.getElementById('inputText');
+  input.value += letter.name + ' ';
+  renderComposition();
+}
+
+function renderComposition() {
+  const text = document.getElementById('inputText').value.trim();
+  const out = document.getElementById('output');
+  out.innerHTML = '';
+
+  if (!text) {
+    out.innerHTML = '<p style="color:#a89b84;text-align:center;">Enter text or click letters to begin writing.</p>';
+    return;
+  }
+
+  // Split on spaces or process as sequence of letter names / latin
+  const tokens = text.split(/\s+/);
+  tokens.forEach(token => {
+    let letter = getLetterByName(token);
+    if (!letter && token.length === 1) {
+      const mapped = latinMap[token.toUpperCase()];
+      if (mapped) letter = getLetterByName(mapped);
+    }
+    if (letter) {
+      out.appendChild(createCard(letter));
+    } else {
+      // Try character-by-character for continuous Latin words
+      for (const ch of token) {
+        const mapped = latinMap[ch.toUpperCase()];
+        if (mapped) {
+          const l = getLetterByName(mapped);
+          if (l) out.appendChild(createCard(l));
+        }
+      }
+    }
+  });
+}
+
+function createCard(l) {
+  const card = document.createElement('div');
+  card.className = 'letter-card';
+  card.innerHTML = `
+    <div class="letter-header">
+      <div class="num">#${l.id}</div>
+      <div class="name">${l.name}</div>
+      <div class="sound">${l.sound}</div>
+      <div class="hebrew">${l.hebrew}</div>
+    </div>
+    <div class="details">
+      <div class="detail"><strong>Fire Movement</strong>${l.movement}</div>
+      <div class="detail"><strong>Fire Form</strong><div class="fire-visual">${getFireEmoji(l)}</div>${l.fire}</div>
+      <div class="detail"><strong>Sacred Geometry</strong>${l.geometry}</div>
+      <div class="detail"><strong>Ancient Origin</strong>${l.origin}</div>
+      <div class="detail"><strong>Number Value</strong>${l.value}</div>
+      <div class="detail"><strong>Celestial / Zodiac</strong>${l.celestial}</div>
+      <div class="detail"><strong>Element</strong>${l.element}</div>
+      <div class="detail"><strong>Manifesting Theme</strong>${l.theme}</div>
+      <div class="detail"><strong>Group</strong>${l.group} Letter</div>
+    </div>
+  `;
+  return card;
+}
+
+function getFireEmoji(l) {
+  const map = {
+    1: '🔥', 2: '🔺', 3: '〰️', 4: '⭕', 5: '➡️', 6: '⬆️', 7: '✖️', 8: '⬛',
+    9: '🌀', 10: '✨', 11: '🔄', 12: '📈', 13: '🌊', 14: '💧', 15: '🔄',
+    16: '👁️', 17: '💨', 18: '🌿', 19: '↩️', 20: '💡', 21: '🔥🔥🔥', 22: '➕'
+  };
+  return map[l.id] || '🔥';
+}
+
+function clearAll() {
+  document.getElementById('inputText').value = '';
+  document.getElementById('output').innerHTML = '';
+}
+
+renderKeyboard();
+document.getElementById('inputText').addEventListener('input', renderComposition);
+</script>
+</body>
+</html>
