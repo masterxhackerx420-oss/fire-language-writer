@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="https://hits.sh/github.com/masterxhackerx420-oss/fire-language-writer/">
+    <img src="https://hits.sh/github.com/masterxhackerx420-oss/fire-language-writer.svg?style=for-the-badge&label=Visitors&color=8b5cf6&logo=eye" alt="Visitors" />
+  </a>
+</p>
+
 # Fire Language Writer
 
 **Live Version:** [https://masterxhackerx420-oss.github.io/fire-language-writer/](https://masterxhackerx420-oss.github.io/fire-language-writer/)
